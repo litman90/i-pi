@@ -19,8 +19,7 @@ def _run(cmd1, cmd2, cwd):
         tmp_dir = Path(tempfile.mkdtemp())
         shutil.copytree(parent / cwd, tmp_dir / cwd)
 
-        # ipi = sp.Popen(cmd1, cwd=(tmp_dir / cwd), shell=True, stdout=sp.PIPE, stderr=sp.PIPE )
-        ipi = sp.Popen(cmd1, cwd=(tmp_dir / cwd), shell=True, stderr=sp.PIPE)
+        ipi = sp.Popen(cmd1, cwd=(tmp_dir / cwd), shell=True, stdout=sp.PIPE, stderr=sp.PIPE, )
         time.sleep(3)
         driver = sp.Popen(cmd2, shell=True, stdout=sp.PIPE, stderr=sp.PIPE)
         # driver.wait()
@@ -29,7 +28,8 @@ def _run(cmd1, cmd2, cwd):
         shutil.rmtree(tmp_dir)
 
     except sp.TimeoutExpired:
-        raise RuntimeError("Time is out. Aborted during {} test".format(str(cwd)))
+        raise RuntimeError("Time is out. Aborted during {} test. \
+              Error {}".format(str(cwd),ipi.communicate()[0]))
 
     except AssertionError:
         raise AssertionError("{}".format(str(cwd)))

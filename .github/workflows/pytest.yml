@@ -57,6 +57,10 @@ jobs:
          which i-pi-driver
          which i-pi
 
+    - name: Test with pytest
+      run: |
+        pytest --cov=./ --cov-report=xml
+
     - name: TEST i-pi
       shell: bash
       run: |
@@ -64,10 +68,6 @@ jobs:
          cd ipi_tests/reg_test
          pwd
          python test_runs.py
-
-    - name: Test with pytest
-      run: |
-        pytest --cov=./ --cov-report=xml
 
     - name: Upload coverage
       uses: codecov/codecov-action@v1
