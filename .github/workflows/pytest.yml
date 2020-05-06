@@ -53,7 +53,10 @@ jobs:
       run: |
          cd drivers
          make
-         echo ${GITHUB_WORKSPACE}
+
+    - name: Add path
+      shell: bash
+      run: |
          echo "::add-path::${GITHUB_WORKSPACE}/bin"
          which i-pi-driver
 
