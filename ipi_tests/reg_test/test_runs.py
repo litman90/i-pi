@@ -21,19 +21,17 @@ cmd1_cmd2_folder_output = [
 def _run(cmd1, cmd2, cwd):
 
     try:
-        tmp_dir = Path(tempfile.mkdtemp())
-        assert parent == "/home/runner/work/i-pi/i-pi/ipi_test/reg_test"
-        shutil.copytree(parent / cwd, tmp_dir / cwd)
+        # tmp_dir = Path(tempfile.mkdtemp())
+        # shutil.copytree(parent / cwd, tmp_dir / cwd)
 
-        ipi = sp.Popen(
-            cmd1, cwd=(tmp_dir / cwd), shell=True, stdout=sp.PIPE, stderr=sp.PIPE,
-        )
+        # ipi = sp.Popen(cmd1, cwd=(tmp_dir / cwd), shell=True, stdout=sp.PIPE, stderr=sp.PIPE )
+        ipi = sp.Popen(cmd1, cwd=cwd, shell=True, stderr=sp.PIPE)
         time.sleep(3)
         driver = sp.Popen(cmd2, shell=True, stdout=sp.PIPE, stderr=sp.PIPE)
         # driver.wait()
         # ipi.wait()
         _check_error(ipi, driver)
-        shutil.rmtree(tmp_dir)
+        # shutil.rmtree(tmp_dir)
 
     except sp.TimeoutExpired:
         raise RuntimeError(
