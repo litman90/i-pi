@@ -52,10 +52,7 @@ jobs:
       run: |
          cd drivers
          make
-         echo $PATH
-         echo 'here'
-         which i-pi
-
+         i-pi-driver
 
     - name: Test with pytest
       run: |
