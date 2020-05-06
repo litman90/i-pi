@@ -36,7 +36,7 @@ jobs:
         echo $PATH
         pwd
         echo ${GITHUB_WORKSPACE}
-        #echo "::add-path::${PATH}/bin"
+        echo "::add-path::${GITHUB_WORKSPACE}/bin"
 
     - name: Lint with flake8
       run: |
