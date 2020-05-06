@@ -29,8 +29,8 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install .
-        echo $GITHUB_WORKSPACE
-        #echo "::add-path::/path/to/dir"
+        echo $PATH
+        echo "::add-path::${PATH}/bin"
 
     - name: Lint with flake8
       run: |
