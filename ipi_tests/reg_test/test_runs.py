@@ -38,7 +38,7 @@ def _run(cmd1, cmd2, cwd):
         raise RuntimeError(
             "Time is out. Aborted during {} test. \
               Error {}".format(
-                str(cwd), ipi.communicate()[0]
+                str(cwd), ipi.communicate(timeout=15)[0]
             )
         )
 
