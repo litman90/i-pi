@@ -72,9 +72,8 @@ jobs:
       shell: bash
       run: |
     
-         cd ipi_tests/reg_test
          pwd
-         python test_runs.py
+         python ipi_tests/reg_test/test_runs.py
 
     - name: Upload coverage
       uses: codecov/codecov-action@v1
