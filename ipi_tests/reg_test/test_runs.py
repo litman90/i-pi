@@ -10,8 +10,8 @@ parent = Path(__file__).parent
 
 cmd1_cmd2_folder_output = [
     [
-        "i-pi input.xml ",
-        " i-pi-driver -h localhost -p 33334 -m ch4hcbe",
+        "/home/runner/work/i-pi/i-pi/bin/i-pi input.xml ",
+        "/home/runner/work/i-pi/i-pi/bin/i-pi-driver -h localhost -p 33334 -m ch4hcbe",
         "geop/bfgs",
         "min.out",
     ],
