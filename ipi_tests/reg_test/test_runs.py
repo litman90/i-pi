@@ -24,11 +24,13 @@ def _run(cmd1, cmd2, cwd):
         ipi = sp.Popen(cmd1, cwd=(tmp_dir / cwd), shell=True, stderr=sp.PIPE)
         time.sleep(3)
         driver = sp.Popen(cmd2, shell=True, stdout=sp.PIPE, stderr=sp.PIPE)
-        driver.wait()
-        ipi.wait()
+        # driver.wait()
+        # ipi.wait()
         _check_error(ipi, driver)
         shutil.rmtree(tmp_dir)
 
+    except sp.TimeoutExpired:
+        raise sp.TimeoutExpired("Time is out. Aborted during {} test".format(str(cwd)))
     except AssertionError:
         raise AssertionError("{}".format(str(cwd)))
 
@@ -40,7 +42,7 @@ def _run(cmd1, cmd2, cwd):
 
 
 def _check_error(ipi, driver):
-    assert "" == ipi.communicate()[1].decode("ascii")
+    assert "" == ipi.communicate(timeout=30)[1].decode("ascii")
 
 
 @pytest.mark.parametrize("cmd1,cmd2,folder,file", cmd1_cmd2_folder_output)
