@@ -10,8 +10,8 @@ parent = Path(__file__).parent
 
 cmd1_cmd2_folder_output = [
     [
-        "i-pi input.xml &",
-        "i-pi-driver -h localhost -p 33334 -m ch4hcbe",
+        "i-pi input.xml ",
+        " i-pi-driver -h localhost -p 33334 -m ch4hcbe",
         "geop/bfgs",
         "min.out",
     ],
@@ -38,7 +38,7 @@ def _run(cmd1, cmd2, cwd):
         raise RuntimeError(
             "Time is out. Aborted during {} test. \
               Error {}".format(
-                str(cwd), ipi.communicate(timeout=15)[0]
+                str(cwd), ipi.communicate()[0]
             )
         )
 
