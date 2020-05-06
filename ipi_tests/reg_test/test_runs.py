@@ -9,24 +9,25 @@ import tempfile
 parent = Path(__file__).parent
 
 cmd1_cmd2_folder_output = [
-    ["i-pi input.xml &", "i-pi-driver -u -m ch4hcbe", "geop/sd", "min.out"],
     ["i-pi input.xml &", "i-pi-driver -u -m ch4hcbe", "geop/bfgs", "min.out"],
+    ["i-pi input.xml &", "i-pi-driver -u -m ch4hcbe", "geop/sd", "min.out"],
 ]
 
 
-def _run(tmp_path, cmd1, cmd2, cwd):
+def _run(cmd1, cmd2, cwd):
 
     try:
-        shutil.copytree(parent / cwd, tmp_path / cwd)
+        tmp_dir = Path(tempfile.mkdtemp())
+        shutil.copytree(parent / cwd, tmp_dir / cwd)
 
-        ipi = sp.Popen(
-            cmd1, cwd=(tmp_path / cwd), shell=True, stdout=sp.PIPE, stderr=sp.PIPE
-        )
+        #ipi = sp.Popen(cmd1, cwd=(tmp_dir / cwd), shell=True, stdout=sp.PIPE, stderr=sp.PIPE )
+        ipi = sp.Popen(cmd1, cwd=(tmp_dir / cwd), shell=True,  stderr=sp.PIPE )
         time.sleep(3)
         driver = sp.Popen(cmd2, shell=True, stdout=sp.PIPE, stderr=sp.PIPE)
         driver.wait()
         ipi.wait()
         _check_error(ipi, driver)
+        shutil.rmtree(tmp_dir)
 
     except AssertionError:
         raise AssertionError("{}".format(str(cwd)))
@@ -43,14 +44,12 @@ def _check_error(ipi, driver):
 
 
 @pytest.mark.parametrize("cmd1,cmd2,folder,file", cmd1_cmd2_folder_output)
-def test_cmd_and_files(tmp_path, cmd1, cmd2, folder, file):
-    _run(tmp_path, cmd1, cmd2, folder)
+def test_cmd_and_files(cmd1, cmd2, folder, file):
+    _run(cmd1, cmd2, folder)
 
 
 if __name__ == "__main__":
 
     for (cmd1, cmd2, folder, file) in cmd1_cmd2_folder_output:
-        tmpdir = tempfile.mkdtemp()
-        print("Running {} in {}".format(folder, Path(tmpdir) / folder))
-        test_cmd_and_files(Path(tmpdir), cmd1, cmd2, folder, file)
-        shutil.rmtree(tmpdir)
+        print("Running {} ".format(folder))
+        test_cmd_and_files(cmd1, cmd2, folder, file)
