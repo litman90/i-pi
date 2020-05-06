@@ -54,10 +54,8 @@ jobs:
          cd drivers
          make
          echo ${GITHUB_WORKSPACE}
-         echo "::add-path::${GITHUB_WORKSPACE}/drivers"
-         pwd
-         chmod a+x driver.x 
-         which driver.x
+         echo "::add-path::${GITHUB_WORKSPACE}/bin"
+         which i-pi-driver
 
     - name: Test with pytest
       run: |
