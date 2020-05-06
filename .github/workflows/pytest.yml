@@ -34,6 +34,7 @@ jobs:
       shell: bash
       run: |
         echo $PATH
+        echo pwd
         echo "::add-path::${PATH}/bin"
 
     - name: Lint with flake8
@@ -58,7 +59,6 @@ jobs:
       run: |
          cd drivers
          make
-         which i-pi-driver
 
     - name: Test with pytest
       run: |
