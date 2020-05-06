@@ -5,6 +5,7 @@
 
 import os
 
+
 def local(file=None):
     """Returns local folder of the tests directory.
 
@@ -15,4 +16,3 @@ def local(file=None):
         return os.path.dirname(__file__)
     else:
         return os.path.join(os.path.dirname(__file__), file)
-

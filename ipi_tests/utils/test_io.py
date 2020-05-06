@@ -154,7 +154,6 @@ def test_print_pdb2():
 def test_print_xyz2():
     """Tests that mode/xyz files are printed correctly."""
 
-    print('here',local("test.pos_0.xyz"))
     with open(local("test.pos_0.xyz"), "r") as f:
         with open(local("test.pos_1.xyz"), "w") as out:
             for num, ret in enumerate(iter_file("xyz", f)):
