@@ -54,11 +54,16 @@ jobs:
       run: |
          cd drivers
          make
+         cd ..
          which i-pi-driver
          which i-pi
 
     - name: Test with pytest
+      shell: bash
       run: |
+        which i-pi-driver
+        which i-pi
+        pwd
         pytest --cov=./ --cov-report=xml
 
     - name: TEST i-pi
