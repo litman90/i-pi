@@ -12,18 +12,6 @@ import shutil
 import tempfile
 
 
-def local(file=None):
-    """Returns local folder of the tests directory.
-
-    Args:
-        - file: Append file to the local folder
-    """
-    if file is None:
-        return os.path.dirname(__file__)
-    else:
-        return os.path.join(os.path.dirname(__file__), file)
-
-
 class SimulationTest(object):
 
     """Simple class used to test various aspects of the simulation.
