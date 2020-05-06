@@ -5,7 +5,7 @@
 # See the "licenses" directory for full license information.
 
 
-from runs.common_run import SimulationTest
+from ipi_tests.runs.common_run import SimulationTest
 
 
 def test_lj_gas():
