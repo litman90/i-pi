@@ -56,6 +56,14 @@ jobs:
          make
          which i-pi-driver
 
+    - name: TEST i-pi
+      shell: bash
+      run: |
+    
+         cd ipi_tests/reg_test
+         pwd
+         python test_runs.py
+
     - name: Test with pytest
       run: |
         pytest --cov=./ --cov-report=xml
