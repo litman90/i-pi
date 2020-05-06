@@ -22,6 +22,7 @@ def _run(cmd1, cmd2, cwd):
 
     try:
         tmp_dir = Path(tempfile.mkdtemp())
+        assert parent == "/home/runner/work/i-pi/i-pi/ipi_test/reg_test"
         shutil.copytree(parent / cwd, tmp_dir / cwd)
 
         ipi = sp.Popen(
