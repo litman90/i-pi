@@ -64,8 +64,7 @@ jobs:
         which i-pi-driver
         which i-pi
         pwd
-        cd ipi_tests/reg_test
-        pytest test_runs.py
+        pytest ipi_tests/reg_test/test_runs.py
         #pytest --cov=./ --cov-report=xml
 
     - name: TEST i-pi
