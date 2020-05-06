@@ -55,6 +55,7 @@ jobs:
          cd drivers
          make
          which i-pi-driver
+         which i-pi
 
     - name: TEST i-pi
       shell: bash
