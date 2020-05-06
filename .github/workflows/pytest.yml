@@ -53,7 +53,9 @@ jobs:
       run: |
          cd drivers
          make
+         echo ${GITHUB_WORKSPACE}
          echo "::add-path::${GITHUB_WORKSPACE}/drivers"
+         chmod a+x driver.x 
          which driver.x
 
     - name: Test with pytest
