@@ -29,7 +29,8 @@ def _run(cmd1, cmd2, cwd):
         shutil.rmtree(tmp_dir)
 
     except sp.TimeoutExpired:
-        raise sp.TimeoutExpired("Time is out. Aborted during {} test".format(str(cwd)))
+        raise RuntimeError("Time is out. Aborted during {} test".format(str(cwd)))
+
     except AssertionError:
         raise AssertionError("{}".format(str(cwd)))
 
