@@ -9,8 +9,7 @@ import tempfile
 parent = Path(__file__).parent
 
 cmd1_cmd2_folder_output = [
-    ["i-pi input.xml &", "i-pi-driver -u -m ch4hcbe", "geop/bfgs", "min.out"],
-    ["i-pi input.xml &", "i-pi-driver -u -m ch4hcbe", "geop/sd", "min.out"],
+    ["i-pi input.xml &", "i-pi-driver -h localhost -p 33334 -m ch4hcbe", "geop/bfgs", "min.out"],
 ]
 
 

@@ -4,7 +4,8 @@
         <trajectory stride="1" filename="xc" format="xyz">x_centroid{angstrom}</trajectory>
    </output>
    <total_steps>400       </total_steps>
-   <ffsocket name="cbe" mode="unix" >
+   <ffsocket name="cbe" mode="inet" >
+       <port> 33334 </port> 
        <address> localhost </address> 
    </ffsocket>
    <system >
