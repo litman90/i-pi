@@ -30,12 +30,13 @@ jobs:
         pip install -r requirements.txt
         pip install .
 
-    - name: Compile Driver
+    - name: Test-Paths
       shell: bash
       run: |
         echo $PATH
-        echo pwd
-        echo "::add-path::${PATH}/bin"
+        pwd
+        echo ${GITHUB_WORKSPACE}
+        #echo "::add-path::${PATH}/bin"
 
     - name: Lint with flake8
       run: |
@@ -59,6 +60,7 @@ jobs:
       run: |
          cd drivers
          make
+         which i-pi-driver
 
     - name: Test with pytest
       run: |
