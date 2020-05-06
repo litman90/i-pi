@@ -55,6 +55,7 @@ jobs:
          make
          echo ${GITHUB_WORKSPACE}
          echo "::add-path::${GITHUB_WORKSPACE}/drivers"
+         pwd
          chmod a+x driver.x 
          which driver.x
 
