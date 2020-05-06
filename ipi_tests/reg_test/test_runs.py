@@ -25,7 +25,7 @@ def _run(cmd1, cmd2, cwd):
         # shutil.copytree(parent / cwd, tmp_dir / cwd)
 
         # ipi = sp.Popen(cmd1, cwd=(tmp_dir / cwd), shell=True, stdout=sp.PIPE, stderr=sp.PIPE )
-        ipi = sp.Popen(cmd1, cwd=(parent/cwd), shell=True, stderr=sp.PIPE)
+        ipi = sp.Popen(cmd1, cwd=(parent / cwd), shell=True, stderr=sp.PIPE)
         time.sleep(3)
         driver = sp.Popen(cmd2, shell=True, stdout=sp.PIPE, stderr=sp.PIPE)
         # driver.wait()
