@@ -23,13 +23,29 @@ from ctypes import c_double
 class lammps_driver(Dummy_driver):
     def __init__(self, args=None, verbose=False):
         super(lammps_driver, self).__init__(args, error_msg=ERROR_MSG)
-
+        self.posconv = 0.52917721
+        self.potconv = 3.1668152e-06
         self.initialize_lammps()
+        self.units_lammps = {}
+        self.units_lammps["electron"] = {
+            "boltz" == 3.16681534e-6,
+            "nktv2p" == 2.94210108e13,
+            "angstrom" == 1.88972612,
+        }
+        self.units_lammps["metal"] = {
+            "boltz" == 8.617343e-5,
+            "nktv2p" == 1.6021765e6,
+            "angstrom" == 1.0,
+        }
 
     def initialize_lammps(self):
         """Initialize the lammps driver"""
         self.lmp = lammps()
         self.lmp.file(self._inputfile)
+        self.units = self.lmp.extract_global("units")
+        assert (
+            self.units == "electron"
+        ), 'This driver is only implemented for Lammps "electron" units'
         self.natoms = self.lmp.get_natoms()
 
     def check_arguments(self):
