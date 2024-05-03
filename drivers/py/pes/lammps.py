@@ -8,7 +8,10 @@ __DRIVER_NAME__ = "lammps"
 __DRIVER_CLASS__ = "lammps_driver"
 
 ERROR_MSG = """
-lammps  driver requires specification of the inputfile
+Lammps  driver requires specification of the inputfile
+Note: the lammps input file should contain all the information as usual
+except the 'fix ipi' and 'run' commands
+
 Example: python driver.py -m lammps -u -o <inputfile>
 """
 from lammps import lammps, LMP_VAR_EQUAL
