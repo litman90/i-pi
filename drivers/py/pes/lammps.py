@@ -44,8 +44,9 @@ class lammps_driver(Dummy_driver):
         """Send information to Lammps"""
         n3 = self.natoms * 3
         x = (n3 * c_double)()
+        p = pos.flatten()
         for i in range(n3):
-            x[i] = pos.flatten()[i]
+            x[i] = p[i]
         self.lmp.scatter_atoms("x", 1, 3, x)
 
     def get_info(self):
@@ -63,15 +64,9 @@ class lammps_driver(Dummy_driver):
     def __call__(self, cell, pos):
         """Lammps potential"""
 
-        print("\n")
-        print("\n")
-        print("here0", self.natoms, pos.shape)
-        print("\n")
-        print("\n")
         self.send_info(cell, pos)
         self.lmp.command("run 0")
         pot, force, vir = self.get_info()
-        print("here", self.natoms, pos.shape, force.shape)
         # vir = cell * 0.0  # makes a zero virial with same shape as cell
         extras = "nada"
         return pot, force, vir, extras
