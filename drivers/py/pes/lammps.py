@@ -42,8 +42,9 @@ eV2au = units.unit_to_internal("energy", "electronvolt", 1.0)
 
 
 class lammps_driver(Dummy_driver):
-    def __init__(self, args=None, verbose=False):
-        super(lammps_driver, self).__init__(args, error_msg=ERROR_MSG)
+
+    def __init__(self, args=None, verbose=False,error_msg=ERROR_MSG):
+        super(lammps_driver, self).__init__(args, error_msg=error_msg)
         self.posconv = 0.52917721
         self.potconv = 3.1668152e-06
         self.initialize_lammps()
@@ -177,3 +178,4 @@ class lammps_driver(Dummy_driver):
         extras = "nada"
 
         return pot, force, vir, extras
+
