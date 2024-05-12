@@ -23,7 +23,7 @@ class lammps_ghost_driver(lammps_driver):
 
     def initialize_lammps(self):
         super(lammps_ghost_driver, self).initialize_lammps()
-        if(np.absolute(self._displacement) >0.0001):
+        if(np.absolute(self._displacement) >10**-6):
          self.natoms3_real  = self.natoms3//2
          self.natoms3_ghost = self.natoms3//2
          self.natoms_real  = self.natoms//2
@@ -59,7 +59,6 @@ class lammps_ghost_driver(lammps_driver):
         #Ghost system
         for i in range(self.natoms_ghost):
          for ii in range(3):
-            print(i,ii,self.natoms3_real+3*i+ii,self.natoms3)
             x[self.natoms3_real+3*i+ii] = p[3*i+ii] + self.disp_v[ii] 
 
         self.lmp.scatter_atoms("x", 1, 3, x)
@@ -92,7 +91,6 @@ class lammps_ghost_driver(lammps_driver):
         force = np.zeros((self.natoms_real * 3))
         for i in range(self.natoms3_real):
             force[i] = f[i]
-            print(i,force[i])
         current_vol = self.lmp.get_thermo("vol")
         vir = np.eye(3) * 0.0
 
