@@ -11,6 +11,11 @@ import re
 
 from ipi.utils.messages import verbosity, info
 
+try:
+    import ase
+    from ase.units import Bohr, Hartree, eV, Angstrom, Pascal, kB, Debye, _amu
+except ImportError:
+    ase = None
 
 __all__ = ["Constants", "Elements", "unit_to_internal", "unit_to_user"]
 
@@ -27,6 +32,7 @@ class Constants(object):
     kb = 1.0
     hbar = 1.0
     amu = 1822.8885
+    e = 1.0  # elementary charge, electron charge = - |e|
 
 
 class Elements(dict):
@@ -219,6 +225,22 @@ UnitMap = {
         "inversecm": 4.5563353e-06,
         "hertz*rad": 2.4188843e-17,
         "hertz": 1.5198298e-16,
+        "hz": 1.5198298e-16,
+        "thz": 1.5198298e-4,
+    },
+    "electric-field": {  # Hartree/Bohr radius
+        # 1Hartree = 27.2113862459 eV
+        #    1Bohr = 0.5291772109  A
+        "": 1.00,
+        "automatic": 1.00,
+        "atomic_unit": 1.00,
+        "ev/a": 0.019446903811441516,  # 0.5291772109/27.2113862459
+    },
+    "electric-dipole": {  # electron charge * Bohr
+        "": 1.00,
+        "automatic": 1.00,
+        "atomic_unit": 1.00,
+        "eang": 1.8897261,  # electron charge * angstrom
     },
     "ms-momentum": {  # TODO fill up units here (mass-scaled momentum)
         "": 1.00,
@@ -273,6 +295,45 @@ UnitMap = {
         "ev/ang^2": 0.010290858,
     },
 }
+
+# Conditionally includes "ase" units for each quantity
+if ase is not None:
+
+    # Conversion factors from atomic units to ASE units
+    conversion_factors = {
+        "undefined": {"ase": 1},
+        "energy": {"ase": 1 / (Hartree / eV)},
+        "temperature": {"ase": kB},
+        "time": {
+            "ase": 1
+            / ((Bohr / Angstrom) * (1 / (Hartree / eV)) ** 0.5 * (_amu / 1) ** 0.5)
+        },
+        "frequency": {
+            "ase": (Bohr / Angstrom) * (1 / (Hartree / eV)) ** 0.5 * (_amu / 1) ** 0.5
+        },
+        "electric-field": {"ase": 1 / (Hartree / (Bohr * eV / Angstrom))},
+        "electric-dipole": {"ase": 1 / (Bohr / Debye)},
+        "length": {"ase": 1 / (Bohr / Angstrom)},
+        "volume": {"ase": 1 / ((Bohr**3) / (Angstrom**3))},
+        "velocity": {
+            "ase": 1 / ((Hartree / eV) ** 0.5 * (Bohr / Angstrom) / (_amu / 1) ** 0.5)
+        },
+        "momentum": {"ase": 1 / ((Bohr / Angstrom) * (Hartree / eV) ** 0.5)},
+        "mass": {"ase": 1},  # Atomic unit of mass to amu
+        "pressure": {"ase": 1 / (Hartree / (Bohr**3 * Pascal))},
+        "density": {
+            "ase": 1 / (_amu / (Angstrom**3))
+        },  # Atomic unit of density to g/cm^3
+        "force": {"ase": 1 / (Hartree / Bohr)},  # Atomic unit of force to N
+        "hessian": {
+            "ase": 1 / (Hartree / (Bohr**2))
+        },  # Atomic unit of Hessian to eV/Å^2
+    }
+
+    # Update UnitMap with ASE conversion factors
+    for quantity, factors in conversion_factors.items():
+        if quantity in UnitMap:
+            UnitMap[quantity].update(factors)
 
 
 # a list of magnitude prefixes
@@ -352,6 +413,7 @@ def unit_to_internal(family, unit, number):
     if prefix not in UnitPrefix:
         raise TypeError(prefix + " is not a valid unit prefix.")
     if not base.lower() in UnitMap[family]:
+        print(base.lower(), UnitMap[family])
         raise TypeError(base + " is an undefined unit for kind " + family + ".")
 
     return number * UnitMap[family][base.lower()] * UnitPrefix[prefix]

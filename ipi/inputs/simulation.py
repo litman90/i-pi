@@ -12,7 +12,7 @@ from ipi.utils.units import *
 from ipi.utils.prng import *
 from ipi.utils.io import *
 from ipi.utils.io.inputs.io_xml import *
-from ipi.utils.messages import verbosity, info
+from ipi.utils.messages import verbosity
 from ipi.engine.smotion import Smotion
 from ipi.inputs.prng import InputRandom
 from ipi.inputs.system import InputSystem, InputSysTemplate
@@ -142,6 +142,14 @@ frequency in your simulation to make i-PI faster. Use at your own risk!
                 "help": "A format for all printed floats.",
             },
         ),
+        "sockets_prefix": (
+            InputAttribute,
+            {
+                "dtype": str,
+                "default": "/tmp/ipi_",
+                "help": "A prefix prepended to the `address` value to form the UNIX-domain socket location.",
+            },
+        ),
     }
 
     dynamic = {
@@ -197,6 +205,7 @@ frequency in your simulation to make i-PI faster. Use at your own risk!
 
         super(InputSimulation, self).store()
 
+        self.sockets_prefix.store(simul.sockets_prefix)
         self.output.store(simul.outtemplate)
         self.prng.store(simul.prng)
         self.step.store(simul.step)
@@ -324,8 +333,11 @@ frequency in your simulation to make i-PI faster. Use at your own risk!
                 or k == "ffcommittee"
                 or k == "ffcavphsocket"
             ):
-                info(" # @simulation: Fetching" + k, verbosity.low)
-                fflist.append(v.fetch())
+                new_ff = v.fetch()
+                if k == "ffsocket":
+                    # overrides ffsocket prefix
+                    new_ff.socket.sockets_prefix = self.sockets_prefix.fetch()
+                fflist.append(new_ff)
 
         # this creates a simulation object which gathers all the little bits
         import ipi.engine.simulation as esimulation  # import here as otherwise this is the mother of all circular imports...
@@ -342,6 +354,7 @@ frequency in your simulation to make i-PI faster. Use at your own risk!
             ttime=self.total_time.fetch(),
             threads=self.threading.fetch(),
             safe_stride=self.safe_stride.fetch(),
+            sockets_prefix=self.sockets_prefix.fetch(),
         )
 
         return rsim

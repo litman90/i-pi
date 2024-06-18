@@ -344,17 +344,24 @@ class TrajectoryOutput(BaseOutput):
             "positions",
             "velocities",
             "forces",
+            "forces_spring",
+            "Eforces",
             "extras",
             # "extras_component_raw", write out a single file as we don't know how to do contraction here
             "extras_bias",
             "forces_sc",
             "momenta",
+            "becx",
+            "becy",
+            "becz",
         ]:
             # must write out trajectories for each bead, so must create b streams
 
             # prepare format string for file name
             if getkey(self.what)[:6] == "extras":
                 fmt_fn = self.filename + "_" + fmt_bead
+            elif self.format == "ase":
+                fmt_fn = self.filename + "_" + fmt_bead + ".extxyz"
             else:
                 fmt_fn = self.filename + "_" + fmt_bead + "." + self.format
 
@@ -371,7 +378,10 @@ class TrajectoryOutput(BaseOutput):
             filename = self.filename
             # prepare format string for file name
             if getkey(self.what)[:6] != "extras":
-                filename += "." + self.format
+                if self.format == "ase":
+                    filename += ".extxyz"
+                else:
+                    filename += "." + self.format
             self.out = open_backup(filename, mode)
 
     def close_stream(self):
@@ -524,6 +534,7 @@ class TrajectoryOutput(BaseOutput):
                 stream.write("\n")
             elif self.extra_type == "raw":
                 stream.write(str(data))
+                stream.write("\n")
             else:
                 raise KeyError(
                     "Extra type '"
@@ -538,8 +549,13 @@ class TrajectoryOutput(BaseOutput):
             "positions",
             "velocities",
             "forces",
+            "forces_spring",
+            "Eforces",
             "forces_sc",
             "momenta",
+            "becx",
+            "becy",
+            "becz",
         ]:
             fatom = Atoms(self.system.beads.natoms)
             fatom.names[:] = self.system.beads.names

@@ -17,8 +17,7 @@ import sys
 import numpy as np
 
 from ipi.utils.softexit import softexit
-from ipi.utils.messages import verbosity
-from ipi.utils.messages import info
+from ipi.utils.messages import info, verbosity, warning
 from ipi.interfaces.sockets import InterfaceSocket
 from ipi.utils.depend import dstrip
 from ipi.utils.io import read_file
@@ -671,7 +670,7 @@ class FFPlumed(FFEval):
         init_file="",
         plumeddat="",
         plumedstep=0,
-        plumedextras=[],
+        plumed_extras=[],
     ):
         """Initialises FFPlumed.
 
@@ -690,7 +689,7 @@ class FFPlumed(FFEval):
         self.plumed = plumed.Plumed()
         self.plumeddat = plumeddat
         self.plumedstep = plumedstep
-        self.plumedextras = plumedextras
+        self.plumed_extras = plumed_extras
         self.init_file = init_file
 
         if self.init_file.mode == "xyz":
@@ -706,14 +705,18 @@ class FFPlumed(FFEval):
         self.plumed.cmd("setMDEngine", "i-pi")
         self.plumed.cmd("setPlumedDat", self.plumeddat)
         self.plumed.cmd("setNatoms", self.natoms)
-        self.plumed.cmd("setTimestep", 1.0)
+        timeunit = 2.4188843e-05  # atomic time to ps
+        self.plumed.cmd("setMDTimeUnits", timeunit)
+        # given we don't necessarily call plumed once per step, so time does not make
+        # sense, we set the time step so that time in plumed is a counter of the number of times
+        # called
+        self.plumed.cmd("setTimestep", 1 / timeunit)
         self.plumed.cmd(
             "setMDEnergyUnits", 2625.4996
         )  # Pass a pointer to the conversion factor between the energy unit used in your code and kJ mol-1
         self.plumed.cmd(
             "setMDLengthUnits", 0.052917721
         )  # Pass a pointer to the conversion factor between the length unit used in your code and nm
-        self.plumed.cmd("setMDTimeUnits", 2.4188843e-05)
         self.plumedrestart = False
         if self.plumedstep > 0:
             # we are restarting, signal that PLUMED should continue
@@ -722,7 +725,7 @@ class FFPlumed(FFEval):
         self.plumed.cmd("init")
 
         self.plumed_data = {}
-        for x in plumedextras:
+        for x in plumed_extras:
             rank = np.zeros(1, dtype=np.int_)
             self.plumed.cmd(f"getDataRank {x}", rank)
             if rank[0] > 1:
@@ -762,7 +765,7 @@ class FFPlumed(FFEval):
         self.plumed.cmd("setMasses", self.masses)
 
         # these instead are set properly. units conversion is done on the PLUMED side
-        self.plumed.cmd("setBox", r["cell"][0].T)
+        self.plumed.cmd("setBox", r["cell"][0].T.copy())
         pos = r["pos"].reshape(-1, 3)
 
         if self.system_force is not None:
@@ -808,7 +811,7 @@ class FFPlumed(FFEval):
         self.plumed.cmd("setMasses", self.masses)
         rpos = pos.reshape((-1, 3))
         self.plumed.cmd("setPositions", rpos)
-        self.plumed.cmd("setBox", cell.T)
+        self.plumed.cmd("setBox", cell.T.copy())
         if self.system_force is not None:
             f[:] = dstrip(self.system_force.f).reshape((-1, 3))
             vir[:] = -dstrip(self.system_force.vir)
@@ -1182,32 +1185,50 @@ class FFCommittee(ForceField):
         virs = []
         xtrs = []
 
+        all_have_frc = True
+        all_have_vir = True
+
         for ff_r in com_handles:
             # if required, tries to extract multiple committe members from the extras JSON string
             if "committee_pot" in ff_r["result"][3] and self.parse_json:
                 pots += ff_r["result"][3]["committee_pot"]
-                if "committee_force" not in ff_r["result"][3]:
-                    raise ValueError(
-                        "JSON extras for committe potential misses `committee_force` entry"
-                    )
-                frcs += ff_r["result"][3]["committee_force"]
-                if "committee_virial" not in ff_r["result"][3]:
-                    raise ValueError(
-                        "JSON extras for committe potential misses `committee_virial` entry"
-                    )
-                virs += ff_r["result"][3]["committee_virial"]
-                ff_r["result"][3].pop("committee_pot")
-                ff_r["result"][3].pop("committee_force")
-                ff_r["result"][3].pop("committee_virial")
-                xtrs.append(ff_r["result"][3])
+                if "committee_force" in ff_r["result"][3]:
+                    frcs += ff_r["result"][3]["committee_force"]
+                    ff_r["result"][3].pop("committee_force")
+                else:
+                    # if the commitee doesn't have forces, just add the mean force from this model
+                    frcs.append(ff_r["result"][1])
+                    warning("JSON committee doesn't have forces", verbosity.medium)
+                    all_have_frc = False
+
+                if "committee_virial" in ff_r["result"][3]:
+                    virs += ff_r["result"][3]["committee_virial"]
+                    ff_r["result"][3].pop("committee_virial")
+                else:
+                    # if the commitee doesn't have virials, just add the mean virial from this model
+                    virs.append(ff_r["result"][2])
+                    warning("JSON committee doesn't have virials", verbosity.medium)
+                    all_have_vir = False
+
             else:
                 pots.append(ff_r["result"][0])
                 frcs.append(ff_r["result"][1])
                 virs.append(ff_r["result"][2])
-                xtrs.append(ff_r["result"][3])
+
         pots = np.array(pots)
-        frcs = np.array(frcs).reshape(len(pots), -1)
+        if len(pots) != len(frcs) and len(frcs) > 1:
+            raise ValueError(
+                "If the committee returns forces, we need *all* components"
+            )
+        frcs = np.array(frcs).reshape(len(frcs), -1)
+
+        if len(pots) != len(virs) and len(virs) > 1:
+            raise ValueError(
+                "If the committee returns virials, we need *all* components"
+            )
         virs = np.array(virs).reshape(-1, 3, 3)
+
+        xtrs.append(ff_r["result"][3])
 
         # Computes the mean energetics
         mean_pot = np.mean(pots, axis=0)
@@ -1230,6 +1251,11 @@ class FFCommittee(ForceField):
         std_pot = np.sqrt(var_pot)
 
         if self.baseline_name != "":
+            if not (all_have_frc and all_have_vir):
+                raise ValueError(
+                    "Cannot use weighted baseline without a force ensemble"
+                )
+
             # Computes the additional component of the energetics due to a position
             # dependent weight. This is based on the assumption that V_committee is
             # a correction over the baseline, that V = V_baseline + V_committe, that
@@ -1288,10 +1314,17 @@ class FFCommittee(ForceField):
 
         r["result"][3] = {
             "committee_pot": rescaled_pots,
-            "committee_force": rescaled_frcs.reshape(len(rescaled_pots), -1),
-            "committee_virial": rescaled_virs.reshape(len(rescaled_pots), -1),
             "committee_uncertainty": std_pot,
         }
+
+        if all_have_frc:
+            r["result"][3]["committee_force"] = rescaled_frcs.reshape(
+                len(rescaled_pots), -1
+            )
+        if all_have_vir:
+            r["result"][3]["committee_virial"] = rescaled_virs.reshape(
+                len(rescaled_pots), -1
+            )
 
         if self.baseline_name != "":
             r["result"][3]["baseline_pot"] = (baseline_pot,)
