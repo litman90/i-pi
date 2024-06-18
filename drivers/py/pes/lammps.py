@@ -64,8 +64,10 @@ class lammps_driver(Dummy_driver):
             self.units["energy"] = 1.0
             self.units["force"] = 1.0
             self.units["virial"] = 1.0
+            self.units["distance"] = 1.0
 
         elif self.units["name"] == "metal":
+            # These factors modify the variables before sending them to lammps 
             self.units["pos"] = 1.0 / A2au
             self.units["energy"] = 1.0 / eV2au
             self.units["force"] = A2au / eV2au

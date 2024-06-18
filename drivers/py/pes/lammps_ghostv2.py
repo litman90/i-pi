@@ -33,6 +33,8 @@ class lammps_ghost_v2_driver(lammps_driver):
          self.natoms3_ghost = 0
          self.natoms_real  = self.natoms
          self.natoms_ghost = 0
+        assert self.natoms == self.natoms_real + self.natoms_ghost
+        assert self.natoms3 == self.natoms3_real + self.natoms3_ghost
 
        
 
